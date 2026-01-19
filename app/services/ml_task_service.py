@@ -5,7 +5,7 @@ from app.models.user import User
 
 
 # TODO: Добавить запись в бд, сделать красивые импорты (__init__.py)
-class MlService:
+class MlTaskService:
     def prepare_dataset(self, dataset: str) -> pd.Dataset:
         pass
 
