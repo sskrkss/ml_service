@@ -12,8 +12,8 @@ class TransactionService:
         user.add_transaction(transaction)
 
         if transaction_type == transaction_type.DEPOSIT:
-            user.increase_balance(amount)
+            user.balance.deposit(amount)
         elif transaction_type == transaction_type.WITHDRAW:
-            user.decrease_balance(amount)
+            user.balance.withdraw(amount)
 
         return transaction

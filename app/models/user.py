@@ -1,5 +1,6 @@
 from typing import List
 
+from balance import Balance
 from base_entity import BaseEntity
 from enums import UserRole
 from ml_task import MlTask
@@ -13,7 +14,7 @@ class User(BaseEntity):
         self._email = email
         self._username = username
         self._password_hash = password_hash
-        self._balance: float = 0
+        self._balance: Balance = Balance()
         self._roles: List[UserRole] = [UserRole.USER]
         self._transactions: List[Transaction] = []
         self._ml_tasks: List[MlTask] = []
@@ -31,7 +32,7 @@ class User(BaseEntity):
         return self._password_hash
 
     @property
-    def balance(self) -> float:
+    def balance(self) -> Balance:
         return self._balance
 
     @property
@@ -55,9 +56,3 @@ class User(BaseEntity):
 
     def add_ml_task(self, ml_task: MlTask) -> None:
         self._ml_tasks.append(ml_task)
-
-    def increase_balance(self, amount: float) -> None:
-        self._balance += amount
-
-    def decrease_balance(self, amount: float) -> None:
-        self._balance -= amount
