@@ -5,7 +5,7 @@ import pandas as pd
 
 
 # TODO: проверить, что это действительно синглтон, нам не нужно хранить в памяти много моделей
-class ModelLoader:
+class MlModelLoader:
     _instance = None
     _model = None
 
