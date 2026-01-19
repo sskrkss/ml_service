@@ -5,8 +5,8 @@ from uuid import uuid4, UUID
 
 class BaseEntity(ABC):
     def __init__(self):
-        self._id = uuid4()
-        self._created_at = datetime.now()
+        self._id: UUID = uuid4()
+        self._created_at: datetime = datetime.now()
 
     @property
     def id(self) -> UUID:

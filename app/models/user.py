@@ -1,8 +1,9 @@
 from typing import List
+
 from base_entity import BaseEntity
 from enums import UserRole
+from ml_task import MlTask
 from transaction import Transaction
-from prediction import Prediction
 
 
 class User(BaseEntity):
@@ -15,7 +16,7 @@ class User(BaseEntity):
         self._balance: float = 0
         self._roles: List[UserRole] = [UserRole.USER]
         self._transactions: List[Transaction] = []
-        self._predictions: List[Prediction] = []
+        self._ml_tasks: List[MlTask] = []
 
     @property
     def email(self) -> str:
@@ -42,8 +43,8 @@ class User(BaseEntity):
         return self._transactions
 
     @property
-    def predictions(self) -> List[Prediction]:
-        return self._predictions
+    def ml_tasks(self) -> List[MlTask]:
+        return self._ml_tasks
 
     def add_role(self, role: UserRole) -> None:
         if role not in self._roles:
@@ -51,6 +52,9 @@ class User(BaseEntity):
 
     def add_transaction(self, transaction: Transaction) -> None:
         self._transactions.append(transaction)
+
+    def add_ml_task(self, ml_task: MlTask) -> None:
+        self._ml_tasks.append(ml_task)
 
     def increase_balance(self, amount: float) -> None:
         self._balance += amount
