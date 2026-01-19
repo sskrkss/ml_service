@@ -48,3 +48,12 @@ class User(BaseEntity):
     def add_role(self, role: UserRole) -> None:
         if role not in self._roles:
             self._roles.append(role)
+
+    def add_transaction(self, transaction: Transaction) -> None:
+        self._transactions.append(transaction)
+
+    def increase_balance(self, amount: float) -> None:
+        self._balance += amount
+
+    def decrease_balance(self, amount: float) -> None:
+        self._balance -= amount

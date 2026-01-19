@@ -2,7 +2,7 @@ from app.models.enums import UserRole
 from app.models.user import User
 
 
-# TODO: Добавить запись в бд
+# TODO: Добавить запись в бд, сделать красивые импорты (__init__.py)
 class UserService:
     def add_admin_role(self, user: User) -> User:
         user.add_role(UserRole.ADMIN)

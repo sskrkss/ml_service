@@ -10,4 +10,7 @@ class TaskStatus(Enum):
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
-    PARTIAL = "partial"
+
+class TransactionType(Enum):
+    DEPOSIT = "deposit"
+    WITHDRAW = "withdraw"
