@@ -1,10 +1,10 @@
 from typing import List
 
-from balance import Balance
-from base_entity import BaseEntity
+from .balance import Balance
+from .base_entity import BaseEntity
 from enums import UserRole
-from ml_task import MlTask
-from transaction import Transaction
+from .ml_task import MlTask
+from .transaction import Transaction
 
 
 class User(BaseEntity):
