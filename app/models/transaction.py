@@ -1,5 +1,5 @@
 from .base_entity import BaseEntity
-from enums import TransactionType
+from .enums import TransactionType
 
 
 class Transaction(BaseEntity):

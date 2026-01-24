@@ -1,5 +1,5 @@
 # TODO: Продумать, как будет устроена авторизация
-class UserService:
+class AuthService:
     def login(self):
         pass
 

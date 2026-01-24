@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from .base_entity import BaseEntity
-from enums import TaskStatus
+from .enums import TaskStatus
 
 
 # TODO: с форматом dataset и prediction нужно будет еще подумать, но скорее всего json
