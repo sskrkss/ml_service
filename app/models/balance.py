@@ -1,4 +1,4 @@
-from base_entity import BaseEntity
+from .base_entity import BaseEntity
 
 
 class Balance(BaseEntity):
