@@ -1,18 +1,18 @@
 from enum import Enum
 
 
-class UserRole(Enum):
+class UserRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
 
-class TaskStatus(Enum):
+class TaskStatus(str, Enum):
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
 
 
-class TransactionType(Enum):
+class TransactionType(str, Enum):
     DEPOSIT = "deposit"
     WITHDRAW = "withdraw"

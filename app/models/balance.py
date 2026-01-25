@@ -1,18 +1,22 @@
-from .base_entity import BaseEntity
+from uuid import UUID
+from sqlmodel import Field
+
+from models.base_entity import BaseEntity
 
 
-class Balance(BaseEntity):
-    def __init__(self):
-        super().__init__()
+class Balance(BaseEntity, table=True):
+    amount: float = Field(
+        default=0.0,
+        nullable=False
+    )
+    user_id: UUID = Field(
+        foreign_key="user.id",
+        unique=True,
+        nullable=True
+    )
 
-        self._amount: float = 0
+    def deposit(self, amount: float) -> None:
+        self.amount += amount
 
-    @property
-    def amount(self) -> float:
-        return self._amount
-
-    def deposit(self, deposit_amount: float) -> None:
-        self._amount += deposit_amount
-
-    def withdraw(self, withdraw_amount: float) -> None:
-        self._amount -= withdraw_amount
+    def withdraw(self, amount: float) -> None:
+        self.amount -= amount

@@ -2,8 +2,12 @@ import atexit
 from sqlalchemy.engine.base import Engine
 from sqlmodel import SQLModel, create_engine, Session
 
-from .config import get_settings
-from ..services.user_service import UserService
+from database.config import get_settings
+from models.enums import TransactionType
+from services.user_service import UserService
+from services.transaction_service import TransactionService
+from services.ml_task_service import MlTaskService
+from repositories.user_repository import UserRepository
 
 _engine: Engine | None = None
 
@@ -64,10 +68,71 @@ def init_db(drop_all: bool = False, with_test_data: bool = False) -> None:
         if with_test_data:
             with Session(engine) as session:
                 user_service = UserService(session)
-                user_service.sign_up(email="test@mail.ru",
-                                     username="test_user",
-                                     password="test_password")
+                user = user_service.sign_up(
+                    email="test@mail.ru",
+                    username="test_user",
+                    password="test_password"
+                )
 
                 session.commit()
+
+                print("---------------------------DATABASE TEST STARTED---------------------------")
+
+                user_repository = UserRepository(session)
+                found_user = user_repository.get_by_email(user.email)
+
+                print()
+                print("User")
+                print(found_user)
+
+                print()
+                print("User's balance")
+                print(found_user.balance)
+
+                admin = user_service.add_admin_role(found_user)
+                session.commit()
+
+                print()
+                print("Add admin role")
+                print(admin.roles)
+
+                print()
+                print("Deposit 20.5")
+                transaction_service = TransactionService(session)
+                transaction_service.make_transaction(
+                    transaction_type=TransactionType.DEPOSIT,
+                    amount=20.5,
+                    user=found_user
+                )
+                session.commit()
+                print(found_user.balance)
+
+                print()
+                print("Withdraw 10.2")
+                transaction_service = TransactionService(session)
+                transaction_service.make_transaction(
+                    transaction_type=TransactionType.WITHDRAW,
+                    amount=10.2,
+                    user=found_user
+                )
+                session.commit()
+                print(found_user.balance)
+
+                print()
+                print("All user's transactions")
+                print(found_user.transactions)
+
+                print()
+                print("Add ml task")
+                ml_task_service = MlTaskService(session)
+                ml_task_service.run_task(
+                    dataset={"dataset": "test_dataset"},
+                    user=found_user
+                )
+                session.commit()
+                print(found_user.ml_tasks)
+
+                print()
+                print("---------------------------DATABASE TEST FINISHED---------------------------")
     except Exception as e:
         raise

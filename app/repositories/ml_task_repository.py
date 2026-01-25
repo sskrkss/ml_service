@@ -1,5 +1,5 @@
-from .base_repository import BaseRepository
-from ..models.ml_task import MlTask
+from repositories.base_repository import BaseRepository
+from models.ml_task import MlTask
 
 
 class MlTaskRepository(BaseRepository[MlTask]):

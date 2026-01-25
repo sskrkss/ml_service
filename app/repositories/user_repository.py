@@ -1,7 +1,11 @@
-from .base_repository import BaseRepository
-from ..models.user import User
+from sqlmodel import select
+
+from repositories.base_repository import BaseRepository
+from models.user import User
 
 
 class UserRepository(BaseRepository[User]):
-    # Тут потом укажем специфичные методы
-    pass
+    def get_by_email(self, email: str) -> User | None:
+        statement = select(User).where(User.email == email)
+
+        return self._session.exec(statement).first()

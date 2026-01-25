@@ -1,7 +1,7 @@
-from .base_repository import BaseRepository
-from ..models.transaction import Transaction
+from repositories.base_repository import BaseRepository
+from models.user_transaction import UserTransaction
 
 
-class TransactionRepository(BaseRepository[Transaction]):
+class TransactionRepository(BaseRepository[UserTransaction]):
     # Тут потом укажем специфичные методы
     pass
