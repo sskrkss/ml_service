@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from typing import Dict
 import uvicorn
 import logging
+from database.config import get_settings
+from database.database import init_db
 
 # Настройка логирования
 logging.basicConfig(
@@ -31,6 +32,18 @@ async def health_check() -> Dict[str, str]:
 
 
 if __name__ == '__main__':
+    settings = get_settings()
+    print(settings.APP_NAME)
+    print(settings.API_VERSION)
+    print(f'Debug: {settings.DEBUG}')
+
+    print(settings.DB_HOST)
+    print(settings.DB_NAME)
+    print(settings.DB_USER)
+
+    init_db(drop_all=True, with_test_data=True)
+    print('Init db has been success')
+
     uvicorn.run(
         'main:app',
         host='0.0.0.0',

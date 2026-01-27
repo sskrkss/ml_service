@@ -1,33 +1,42 @@
 from datetime import datetime
+from typing import Dict, Any, Optional, TYPE_CHECKING
+from uuid import UUID
+from sqlalchemy import Column, JSON
+from sqlalchemy.ext.mutable import MutableDict
+from sqlmodel import Field, Relationship
 
-from .base_entity import BaseEntity
-from enums import TaskStatus
+from models.base_entity import BaseEntity
+from models.enums import TaskStatus
+
+if TYPE_CHECKING:
+    from models.user import User
 
 
-# TODO: с форматом dataset и prediction нужно будет еще подумать, но скорее всего json
-class MlTask(BaseEntity):
-    def __init__(self, dataset: str):
-        super().__init__()
-
-        self._dataset = dataset
-        self._prediction: str | None = None
-        self._task_status: TaskStatus = TaskStatus.PENDING
-        self._finished_at: datetime | None = None
-
-    @property
-    def dataset(self) -> str:
-        return self._dataset
-
-    # TODO: если предполагается кэширование, то можно prediction выделить в отдельную сущность
-    #  и сохранять в бд вместе с dataset, чтобы переиспользовать результат
-    @property
-    def prediction(self) -> str | None:
-        return self._prediction
-
-    @property
-    def task_status(self) -> TaskStatus:
-        return self._task_status
-
-    @property
-    def finished_at(self) -> datetime:
-        return self._created_at
+# TODO: с форматом dataset и prediction нужно будет еще подумать, но пока так
+class MlTask(BaseEntity, table=True):
+    dataset: Dict[str, Any] = Field(
+        sa_column=Column(
+            MutableDict.as_mutable(JSON),
+            nullable=False
+        )
+    )
+    prediction: Optional[Dict[str, Any]] = Field(
+        default=None,
+        sa_column=Column(
+            MutableDict.as_mutable(JSON),
+            nullable=True
+        )
+    )
+    task_status: TaskStatus = Field(
+        default=TaskStatus.PENDING,
+        nullable=False
+    )
+    finished_at: Optional[datetime] = Field(
+        default=None,
+        nullable=True
+    )
+    user_id: UUID = Field(
+        foreign_key="user.id",
+        nullable=False
+    )
+    user: "User" = Relationship(back_populates="ml_tasks")

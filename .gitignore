@@ -2,6 +2,8 @@
 
 .env.*
 
+.venv
+
 nginx/ssl/
 *.key
 *.pem
