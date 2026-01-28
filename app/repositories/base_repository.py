@@ -10,7 +10,7 @@ class BaseRepository[T: BaseEntity](ABC):
 
     def save(self, entity: T) -> T:
         self._session.add(entity)
-        self._session.flush()
+        self._session.commit()
         self._session.refresh(entity)
 
         return entity

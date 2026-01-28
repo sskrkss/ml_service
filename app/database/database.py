@@ -74,10 +74,10 @@ def get_session():
 def generate_test_data(engine: Engine) -> None:
     with Session(engine) as session:
         user_service = UserService(session)
-        user = user_service.sign_up(
-            email="test@mail.ru",
-            username="test_user",
-            password="test_password"
-        )
 
-        session.commit()
+        for i in range(1, 4):
+            user_service.sign_up(
+                email=f"test{i}@mail.ru",
+                username=f"test_user_{i}",
+                password=f"test_password_{i}"
+            )

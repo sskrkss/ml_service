@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlmodel import select
 
 from repositories.base_repository import BaseRepository
@@ -9,3 +11,8 @@ class UserRepository(BaseRepository[User]):
         statement = select(User).where(User.email == email)
 
         return self._session.exec(statement).first()
+
+    def get_all(self) -> List[User]:
+        statement = select(User)
+
+        return list(self._session.exec(statement).all())

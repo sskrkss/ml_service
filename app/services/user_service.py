@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlmodel import Session
 
 from models.balance import Balance
@@ -30,4 +32,29 @@ class UserService:
             user_id=user.id
         )
 
+        # try:
+        #     if UserService.get_user_by_email(data.email, session):
+        #         logger.warning(f"Signup attempt with existing email: {data.email}")
+        #         raise HTTPException(
+        #             status_code=status.HTTP_409_CONFLICT,
+        #             detail="User with this email already exists"
+        #         )
+        #
+        #     user = User(
+        #         email=data.email,
+        #         password=data.password)
+        #     UserService.create_user(user, session)
+        #     logger.info(f"New user registered: {data.email}")
+        #     return {"message": "User successfully registered"}
+        #
+        # except Exception as e:
+        #     logger.error(f"Error during signup: {str(e)}")
+        #     raise HTTPException(
+        #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #         detail="Error creating user"
+        #     )
+
         return self.user_repository.save(user)
+
+    def get_users(self) -> List[User]:
+        return self.user_repository.get_all()
