@@ -10,19 +10,16 @@ class MlTaskService:
     def __init__(self, session: Session):
         self.user_repository = UserRepository(session)
 
-    # def prepare_dataset(self, dataset: str) -> pd.Dataset:
-    #     pass
-
     # TODO: Как будто планируется асинхронка,
     #  пока все очень примерно, потом понадобится доп логика для обработки сообщений брокера разного статуса
-    def run_task(self, user: User, dataset: dict) -> MlTask:
+    def run_ml_task(self, user: User, raw_dataset: dict) -> MlTask:
         ml_task = MlTask(
-            dataset=dataset
+            dataset=raw_dataset
         )
 
         user.add_ml_task(ml_task)
         self.user_repository.save(user)
 
-        # TODO: где-то тут отправляем сообщение брокеру на запуск модели
+        # TODO: где-то тут отправляем сообщение брокеру на запуск модели и подготовки датасета (если нужно)
 
         return ml_task

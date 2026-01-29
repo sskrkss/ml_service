@@ -1,15 +1,14 @@
 from typing import Dict
-from fastapi import APIRouter
+
+from fastapi import APIRouter, status
 
 health_check_route = APIRouter()
 
 
-@health_check_route.get("/health-check")
+@health_check_route.get(
+    "/health-check",
+    status_code=status.HTTP_200_OK,
+    summary="App's health check"
+)
 async def health_check() -> Dict[str, str]:
-    """
-    Эндпоинт проверки работоспособности для мониторинга.
-
-    Returns:
-        Dict[str, str]: Сообщение о статусе
-    """
     return {"status": "healthy"}
