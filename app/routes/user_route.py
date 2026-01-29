@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Depends
 from database.database import get_session
 from models import User
 from services.user_service import UserService
-from typing import Dict, List
+from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 user_route = APIRouter()
 
 
+# TODO: возможно выдавать токены сразу
 @user_route.post(
     '/sign-up',
     response_model=Dict[str, str],
@@ -17,21 +18,6 @@ user_route = APIRouter()
     summary="User registration",
     description="Register a new user with email and password")
 async def sign_up(email: str, username: str, password: str, session=Depends(get_session)) -> Dict[str, str]:
-    """
-    Create new user account.
-
-    Args:
-        email: Email address
-        username: Username
-        password: Password
-        session: Database session
-
-    Returns:
-        dict: Success message
-
-    Raises:
-        HTTPException: If user already exists
-    """
     user_service = UserService(session)
     user_service.sign_up(email=email, username=username, password=password)
 
@@ -40,23 +26,14 @@ async def sign_up(email: str, username: str, password: str, session=Depends(get_
     }
 
 
+# TODO: мб понадобится мб нет, доставать id из access_token текущей сессии
 @user_route.get(
-    "/",
-    response_model=List[User],
-    summary="Get all users",
-    response_description="List of all users"
+    "/current",
+    response_model=User,
+    summary="Get current user info",
+    response_description="Current user info"
 )
-async def get_all_users(session=Depends(get_session)) -> List[User]:
-    """
-    Get list of all users.
-
-    Args:
-        session: Database session
-
-    Returns:
-        List[UserResponse]: List of users
-    """
-
+async def get_current_user(session=Depends(get_session)) -> User:
     user_service = UserService(session)
 
-    return user_service.get_users()
+    return user_service.get_user_by_id('id from token')
