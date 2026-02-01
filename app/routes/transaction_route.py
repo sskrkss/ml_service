@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 
 from auth.authenticator import auth_user
 from database.database import get_session
+from dto.request.transaction_request_dto import TransactionRequestDto
 from dto.response.transaction_response_dto import TransactionResponseDto
 from models import User
 from models.enums import TransactionType
@@ -22,14 +23,14 @@ transaction_route = APIRouter()
     status_code=status.HTTP_200_OK
 )
 async def deposit(
-    amount: float,
+    request_dto: TransactionRequestDto,
     user: User = Depends(auth_user),
     session=Depends(get_session)
 ) -> TransactionResponseDto:
     transaction_service = TransactionService(session)
     transaction = transaction_service.make_transaction(
         user=user,
-        amount=amount,
+        amount=request_dto.amount,
         transaction_type=TransactionType.DEPOSIT
     )
 

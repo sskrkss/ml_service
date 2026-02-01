@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 
 from auth.authenticator import auth_admin
 from database.database import get_session
-from dto.request.admin_request_dto import AdminRequestDto
+from dto.request.admin.transaction_request_dto import TransactionRequestDto
 from dto.response.transaction_response_dto import TransactionResponseDto
 from models import User
 from models.enums import TransactionType
@@ -25,8 +25,7 @@ admin_transaction_route = APIRouter()
     status_code=status.HTTP_200_OK
 )
 async def deposit(
-    amount: float,
-    request_dto: AdminRequestDto,
+    request_dto: TransactionRequestDto,
     admin: User = Depends(auth_admin),
     session=Depends(get_session)
 ) -> TransactionResponseDto:
@@ -36,7 +35,7 @@ async def deposit(
     transaction_service = TransactionService(session)
     transaction = transaction_service.make_transaction(
         target_user,
-        amount,
+        request_dto.amount,
         TransactionType.DEPOSIT
     )
 
