@@ -12,4 +12,3 @@ uvicorn
 passlib
 python-jose
 email-validator
-pandas

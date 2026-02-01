@@ -1,8 +1,6 @@
 import pickle
 from typing import Any
 
-import pandas as pd
-
 
 class MlModelLoader:
     _instance = None
@@ -26,5 +24,5 @@ class MlModelLoader:
             return pickle.load(f)
 
     # TODO: Урок 5. трай кетч точно нужен
-    def predict(self, features: pd.Dataset):
-        return self._model.predict(features)
+    def predict(self, input_text: str) -> Any:
+        return self._model.predict(input_text)
