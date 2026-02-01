@@ -1,16 +1,18 @@
-from sqlmodel import Session
+from fastapi import HTTPException, status
+from sqlmodel import Session, Sequence
 
 from models.enums import TransactionType
-from models.user_transaction import UserTransaction
 from models.user import User
+from models.user_transaction import UserTransaction
+from repositories.transaction_repository import TransactionRepository
 from repositories.user_repository import UserRepository
 
 
 class TransactionService:
     def __init__(self, session: Session):
         self.user_repository = UserRepository(session)
+        self.transaction_repository = TransactionRepository(session)
 
-    # TODO: Добавить логику, если баланс отрицательный, плюс продумать логику для админа
     def make_transaction(self, user: User, amount: float, transaction_type: TransactionType) -> UserTransaction:
         transaction = UserTransaction(
             transaction_type=transaction_type,
@@ -22,8 +24,17 @@ class TransactionService:
         if transaction_type == transaction_type.DEPOSIT:
             user.balance.deposit(amount)
         elif transaction_type == transaction_type.WITHDRAW:
+            if amount > user.balance.amount:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Transaction declined: insufficient account balance"
+                )
+
             user.balance.withdraw(amount)
 
         self.user_repository.save(user)
 
         return transaction
+
+    def get_transactions_by_user(self, user: User) -> Sequence[UserTransaction]:
+        return self.transaction_repository.get_by_user(user)

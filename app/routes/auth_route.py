@@ -1,50 +1,78 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Response
 
+from auth.cookie_util import set_auth_cookie, delete_auth_cookie
+from auth.jwt_handler import create_access_token
 from database.database import get_session
+from dto.request.sign_in_request_dto import SignInRequestDto
+from dto.request.sign_up_request_dto import SignUpRequestDto
+from dto.response.message_response_dto import MessageResponseDto
 from services.auth_service import AuthService
 
 auth_route = APIRouter()
 
 
-# TODO: токены сразу выдаем (в куке?)
-# TODO: принимать request dto с валидацией длины, формата email
 @auth_route.post(
-    '/sign-up',
+    "/sign-up",
+    response_model=MessageResponseDto,
     status_code=status.HTTP_200_OK,
     summary="User registration"
 )
-async def sign_up(email: str, username: str, password: str, session=Depends(get_session)) -> None:
+async def sign_up(
+    request_dto: SignUpRequestDto,
+    response: Response,
+    session=Depends(get_session)
+) -> MessageResponseDto:
     auth_service = AuthService(session)
-    auth_service.sign_up(email=email, username=username, password=password)
+    user = auth_service.sign_up(
+        email=str(request_dto.email),
+        username=request_dto.username,
+        plain_password=request_dto.plain_password
+    )
 
-    pass
+    access_token = create_access_token(str(user.id))
+
+    set_auth_cookie(
+        response=response,
+        access_token=access_token
+    )
+
+    return MessageResponseDto(message="Registration successful")
 
 
-# TODO: токены сразу выдаем (в куке?)
 @auth_route.post(
-    '/sign-in',
+    "/sign-in",
+    response_model=MessageResponseDto,
     status_code=status.HTTP_200_OK,
-    summary="User sign-in"
+    summary="User login"
 )
-async def sign_in(emailOrUsername: str, password: str, session=Depends(get_session)) -> None:
-    pass
+async def sign_in(
+    request_dto: SignInRequestDto,
+    response: Response,
+    session=Depends(get_session)
+) -> MessageResponseDto:
+    auth_service = AuthService(session)
+    user = auth_service.sign_in(
+        email_or_username=request_dto.email_or_username,
+        plain_password=request_dto.plain_password
+    )
+
+    access_token = create_access_token(str(user.id))
+
+    set_auth_cookie(
+        response=response,
+        access_token=access_token
+    )
+
+    return MessageResponseDto(message="Login successful")
 
 
-# TODO: чистим куки или что там будет
 @auth_route.post(
-    '/sign-out',
+    "/sign-out",
+    response_model=MessageResponseDto,
     status_code=status.HTTP_200_OK,
-    summary="User sign-out"
+    summary="User logout"
 )
-async def sign_out(session=Depends(get_session)):
-    pass
+async def sign_out(response: Response) -> MessageResponseDto:
+    delete_auth_cookie(response=response)
 
-
-# TODO: взять refresh_token из куки или что там будет
-@auth_route.post(
-    "/refresh-token",
-    status_code=status.HTTP_200_OK,
-    summary="Refresh user's access token"
-)
-async def refresh_token(session=Depends(get_session)) -> None:
-    pass
+    return MessageResponseDto(message="Logout successful")

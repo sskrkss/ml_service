@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: Optional[str] = None
     DEBUG: Optional[bool] = None
     API_VERSION: Optional[str] = None
+    AUTH_SECRET_KEY: Optional[str] = None
+    AUTH_COOKIE_NAME: Optional[str] = None
+    RUN_TASK_PRICE: Optional[float] = None
 
     @property
     def DATABASE_URL_asyncpg(self):

@@ -1,57 +1,68 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
-from auth.authenticator import auth_user
+from auth.authenticator import auth_admin
 from database.database import get_session
+from dto.request.admin_request_dto import AdminRequestDto
 from dto.response.transaction_response_dto import TransactionResponseDto
 from models import User
 from models.enums import TransactionType
 from services.transaction_service import TransactionService
+from services.user_service import UserService
 
-transaction_route = APIRouter()
+admin_transaction_route = APIRouter()
 
 
-@transaction_route.put(
+@admin_transaction_route.put(
     "/deposit",
     openapi_extra={
         "security": [{"BearerAuth": []}],
     },
     response_model=TransactionResponseDto,
-    summary="Deposit money to user balance",
+    summary="Deposit money to user balance by admin",
     status_code=status.HTTP_200_OK
 )
 async def deposit(
     amount: float,
-    user: User = Depends(auth_user),
+    request_dto: AdminRequestDto,
+    admin: User = Depends(auth_admin),
     session=Depends(get_session)
 ) -> TransactionResponseDto:
+    user_service = UserService(session)
+    target_user = user_service.get_user_by_id(str(request_dto.target_user_id))
+
     transaction_service = TransactionService(session)
     transaction = transaction_service.make_transaction(
-        user=user,
-        amount=amount,
-        transaction_type=TransactionType.DEPOSIT
+        target_user,
+        amount,
+        TransactionType.DEPOSIT
     )
 
     return TransactionResponseDto.model_validate(transaction)
 
 
-@transaction_route.get(
+@admin_transaction_route.get(
     "/",
     openapi_extra={
         "security": [{"BearerAuth": []}],
     },
     response_model=List[TransactionResponseDto],
-    summary="Get transactions of current user",
+    summary="Get transactions of user by admin",
     status_code=status.HTTP_200_OK
 )
 async def get_transactions(
-    user: User = Depends(auth_user),
+    target_user_id: UUID,
+    admin: User = Depends(auth_admin),
     session=Depends(get_session)
 ) -> List[TransactionResponseDto]:
+    user_service = UserService(session)
+    target_user = user_service.get_user_by_id(str(target_user_id))
+
     transaction_service = TransactionService(session)
 
     return [
         TransactionResponseDto.model_validate(transaction)
-        for transaction in transaction_service.get_transactions_by_user(user)
+        for transaction in transaction_service.get_transactions_by_user(target_user)
     ]

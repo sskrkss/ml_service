@@ -14,6 +14,8 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # TODO: Урок 5. Скорее всего тут загружаем модель (services.ml_model_loader.py).
+    #  Открытым остается вопрос, если мы создаем синглтон, можно ли работать с этим объектом ассинхронно
     init_db(drop_all=True, with_test_data=True)
     yield
     close_db()

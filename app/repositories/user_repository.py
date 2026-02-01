@@ -1,9 +1,7 @@
-from typing import List
+from sqlmodel import select, Sequence
 
-from sqlmodel import select
-
-from repositories.base_repository import BaseRepository
 from models.user import User
+from repositories.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):
@@ -22,7 +20,7 @@ class UserRepository(BaseRepository[User]):
 
         return self._session.exec(statement).first()
 
-    def get_all(self) -> List[User]:
-        statement = select(User)
+    def get_all(self) -> Sequence[User]:
+        statement = select(User).order_by(User.username)
 
-        return list(self._session.exec(statement).all())
+        return self._session.exec(statement).all()

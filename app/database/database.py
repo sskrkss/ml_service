@@ -3,6 +3,7 @@ from sqlmodel import SQLModel, create_engine, Session
 
 from database.config import get_settings
 from services.auth_service import AuthService
+from services.user_service import UserService
 
 _engine: Engine | None = None
 
@@ -75,9 +76,11 @@ def generate_test_data(engine: Engine) -> None:
     with Session(engine) as session:
         auth_service = AuthService(session)
 
-        for i in range(1, 4):
-            auth_service.sign_up(
-                email=f"test{i}@mail.ru",
-                username=f"test_user_{i}",
-                password=f"test_password_{i}"
-            )
+        test_user = auth_service.sign_up(
+            email=f"sskrk@gmail.com",
+            username=f"sskrk",
+            plain_password=f"12345678"
+        )
+
+        user_service = UserService(session)
+        user_service.add_admin_role(test_user)

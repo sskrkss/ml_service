@@ -12,13 +12,11 @@ if TYPE_CHECKING:
     from models.user import User
 
 
-# TODO: с форматом dataset и prediction нужно будет еще подумать, но пока так
 class MlTask(BaseEntity, table=True):
-    dataset: Dict[str, Any] = Field(
-        sa_column=Column(
-            MutableDict.as_mutable(JSON),
-            nullable=False
-        )
+    input_text: str = Field(
+        min_length=10,
+        max_length=2000,
+        nullable=False
     )
     prediction: Optional[Dict[str, Any]] = Field(
         default=None,

@@ -1,10 +1,12 @@
-from typing import Dict, List
+from typing import List
 
 from fastapi import APIRouter, Depends, status
 
+from auth.authenticator import auth_user
 from database.database import get_session
-from models import MlTask
-from repositories.user_repository import UserRepository
+from dto.request.run_ml_task_request_dto import RunMlTaskRequestDto
+from dto.response.ml_task_response_dto import MlTaskResponseDto
+from models import User
 from services.ml_task_service import MlTaskService
 
 ml_task_route = APIRouter()
@@ -12,30 +14,40 @@ ml_task_route = APIRouter()
 
 @ml_task_route.post(
     "/run",
-    response_model=MlTask,
+    openapi_extra={
+        "security": [{"BearerAuth": []}],
+    },
+    response_model=MlTaskResponseDto,
     summary="Run ml task",
     status_code=status.HTTP_200_OK
 )
-async def run_ml_task(user_id: str, raw_dataset: Dict, session=Depends(get_session)) -> MlTask:
-    # TODO: id пользователя экстрактим из access_token
-    user_repository = UserRepository(session)
-    user = user_repository.get_by_id(user_id)
-
+async def run_ml_task(
+    request_dto: RunMlTaskRequestDto,
+    user: User = Depends(auth_user),
+    session=Depends(get_session)
+) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)
+    ml_task = ml_task_service.run_ml_task(user, request_dto.input_text)
 
-    return ml_task_service.run_ml_task(user, raw_dataset)
+    return MlTaskResponseDto.model_validate(ml_task)
 
 
 @ml_task_route.get(
     "/",
-    response_model=List[MlTask],
+    openapi_extra={
+        "security": [{"BearerAuth": []}],
+    },
+    response_model=List[MlTaskResponseDto],
     summary="Get ml tasks of current user",
     status_code=status.HTTP_200_OK
 )
-async def get_ml_tasks(user_id: str, session=Depends(get_session)) -> List[MlTask]:
-    # TODO: id пользователя экстрактим из access_token
-    user_repository = UserRepository(session)
-    user = user_repository.get_by_id(user_id)
+async def get_ml_tasks(
+    user: User = Depends(auth_user),
+    session=Depends(get_session)
+) -> List[MlTaskResponseDto]:
+    ml_task_service = MlTaskService(session)
 
-    # TODO: скорее всего сортировка нужна будет
-    return user.ml_tasks
+    return [
+        MlTaskResponseDto.model_validate(ml_task)
+        for ml_task in ml_task_service.get_ml_tasks_by_user(user)
+    ]

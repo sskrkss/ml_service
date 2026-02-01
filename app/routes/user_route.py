@@ -1,29 +1,21 @@
-from typing import Dict
-
 from fastapi import APIRouter, Depends, status
 
-from database.database import get_session
-from services.user_service import UserService
+from auth.authenticator import auth_user
+from dto.response.user_response_dto import UserResponseDto
+from models import User
 
 user_route = APIRouter()
 
 
-# TODO: сам id экстрактить из access_token
-# TODO: выдавать dto
 @user_route.get(
     "/current",
+    openapi_extra={
+        "security": [{"BearerAuth": []}],
+    },
+    response_model=UserResponseDto,
     status_code=status.HTTP_200_OK,
-    summary="Get current user info",
+    summary="Get current user info including balance",
     response_description="Current user info including balance"
 )
-async def get_current_user(id: str, session=Depends(get_session)) -> Dict:
-    user_service = UserService(session)
-    user = user_service.get_user_by_id(id)
-
-    return {
-        "id": user.id,
-        "email": user.email,
-        "username": user.username,
-        "roles": user.roles,
-        "balance": user.balance.amount
-    }
+async def get_current_user(user: User = Depends(auth_user)) -> UserResponseDto:
+    return UserResponseDto.model_validate(user)
