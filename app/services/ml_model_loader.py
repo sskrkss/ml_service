@@ -1,10 +1,7 @@
 import pickle
 from typing import Any
 
-import pandas as pd
 
-
-# TODO: проверить, что это действительно синглтон, нам не нужно хранить в памяти много моделей
 class MlModelLoader:
     _instance = None
     _model = None
@@ -18,14 +15,14 @@ class MlModelLoader:
         if self._model is None:
             self._model = self._load_model()
 
-    # TODO: model_path инжектим через env, плюс обработка ошибок
-    # TODO: Any мне не нравится, но пока так
+    # TODO: Урок 5. model_path инжектим через env, плюс обработка ошибок
+    # TODO: Урок 5. Any мне не нравится, нужно понять, что по факту будет возвращаться
     def _load_model(self) -> Any:
         model_path = "models/random_forest.pkl"
 
         with open(model_path, 'rb') as f:
             return pickle.load(f)
 
-    # TODO: трай кетч точно нужен
-    def predict(self, features: pd.Dataset):
-        return self._model.predict(features)
+    # TODO: Урок 5. трай кетч точно нужен
+    def predict(self, input_text: str) -> Any:
+        return self._model.predict(input_text)

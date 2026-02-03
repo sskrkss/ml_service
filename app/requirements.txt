@@ -9,3 +9,6 @@ sqlmodel
 starlette
 fastapi
 uvicorn
+passlib
+python-jose
+email-validator

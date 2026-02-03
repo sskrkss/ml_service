@@ -1,7 +1,17 @@
+from typing import Sequence
+
+from sqlmodel import select, desc
+
+from models import User, MlTask
 from repositories.base_repository import BaseRepository
-from models.ml_task import MlTask
 
 
 class MlTaskRepository(BaseRepository[MlTask]):
-    # Тут потом укажем специфичные методы
-    pass
+    def get_by_user(self, user: User) -> Sequence[MlTask]:
+        statement = (
+            select(MlTask)
+            .where(MlTask.user_id == user.id)
+            .order_by(desc(MlTask.created_at))
+        )
+
+        return self._session.exec(statement).all()

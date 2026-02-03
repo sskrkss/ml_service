@@ -63,8 +63,12 @@ class User(BaseEntity, table=True):
     )
 
     def add_role(self, role: UserRole) -> None:
-        if role not in self.roles:
+        if not self.has_role(role):
             self.roles.append(role)
+
+    def remove_role(self, role: UserRole) -> None:
+        if self.has_role(role):
+            self.roles.remove(role)
 
     def has_role(self, role: UserRole) -> bool:
         return role in self.roles

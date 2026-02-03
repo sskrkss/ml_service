@@ -9,6 +9,11 @@ class Balance(BaseEntity, table=True):
         default=0.0,
         nullable=False
     )
+    currency: str = Field(
+        default="USD",
+        nullable=False,
+        sa_column_kwargs={"default": "USD"}
+    )
     user_id: UUID = Field(
         foreign_key="user.id",
         unique=True,
