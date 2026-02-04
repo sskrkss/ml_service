@@ -1,0 +1,4 @@
+pika
+transformers
+logging
+requests

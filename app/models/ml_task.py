@@ -1,8 +1,9 @@
+import json
 from datetime import datetime
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, List
 from uuid import UUID
+
 from sqlalchemy import Column, JSON
-from sqlalchemy.ext.mutable import MutableDict
 from sqlmodel import Field, Relationship
 
 from models.base_entity import BaseEntity
@@ -18,15 +19,12 @@ class MlTask(BaseEntity, table=True):
         max_length=2000,
         nullable=False
     )
-    prediction: Optional[Dict[str, Any]] = Field(
+    prediction_json: Optional[str] = Field(
         default=None,
-        sa_column=Column(
-            MutableDict.as_mutable(JSON),
-            nullable=True
-        )
+        sa_column=Column("prediction", JSON, nullable=True)
     )
     task_status: TaskStatus = Field(
-        default=TaskStatus.PENDING,
+        default=TaskStatus.PROCESSING,
         nullable=False
     )
     finished_at: Optional[datetime] = Field(
@@ -38,3 +36,16 @@ class MlTask(BaseEntity, table=True):
         nullable=False
     )
     user: "User" = Relationship(back_populates="ml_tasks")
+
+    @property
+    def prediction(self) -> Optional[List[str]]:
+        if self.prediction_json:
+            return json.loads(self.prediction_json)
+        return None
+
+    @prediction.setter
+    def prediction(self, value: Optional[List[str]]):
+        if value:
+            self.prediction_json = json.dumps(value)
+        else:
+            self.prediction_json = None

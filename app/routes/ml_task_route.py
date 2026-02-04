@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, status
 from auth.authenticator import auth_user
 from database.database import get_session
 from dto.request.run_ml_task_request_dto import RunMlTaskRequestDto
+from dto.request.save_ml_task_prediction_request_dto import SaveMlTaskPredictionDto
 from dto.response.ml_task_response_dto import MlTaskResponseDto
 from models import User
 from services.ml_task_service import MlTaskService
@@ -28,6 +29,25 @@ async def run_ml_task(
 ) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)
     ml_task = ml_task_service.run_ml_task(user, request_dto.input_text)
+
+    return MlTaskResponseDto.model_validate(ml_task)
+
+
+@ml_task_route.post(
+    "/save-prediction",
+    response_model=MlTaskResponseDto,
+    summary="Save ml task prediction",
+    status_code=status.HTTP_200_OK
+)
+async def save_ml_task_prediction(
+    request_dto: SaveMlTaskPredictionDto,
+    session=Depends(get_session)
+) -> MlTaskResponseDto:
+    ml_task_service = MlTaskService(session)
+    ml_task = ml_task_service.save_ml_task_prediction(
+        task_id=request_dto.task_id,
+        prediction=request_dto.prediction
+    )
 
     return MlTaskResponseDto.model_validate(ml_task)
 

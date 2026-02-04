@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     AUTH_COOKIE_NAME: Optional[str] = None
     RUN_TASK_PRICE: Optional[float] = None
 
+    # RMQ settings
+    RMQ_HOST: Optional[str] = None
+    RMQ_PORT: Optional[int] = None
+    RMQ_USER: Optional[str] = None
+    RMQ_PASS: Optional[str] = None
+    RMQ_QUEUE: Optional[str] = None
+
     @property
     def DATABASE_URL_asyncpg(self):
         return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
