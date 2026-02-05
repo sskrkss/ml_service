@@ -1,10 +1,10 @@
-from typing import Any, List, Dict
+from typing import Any, List
 
 import torch
 from transformers import pipeline, Pipeline
 
 
-class MlModelLoader:
+class MlModel:
     _instance = None
     _model = None
 
@@ -39,7 +39,7 @@ class MlModelLoader:
         'neutral': 0.24489795918367346
     }
 
-    _emotions_ru = {
+    _ru_labels = {
         "admiration": "восхищение",
         "amusement": "веселье",
         "anger": "злость",
@@ -90,36 +90,25 @@ class MlModelLoader:
         if len(input_text) > 200:
             raise ValueError("Text exceeds maximum length of 200 characters")
 
-    def _filter_predictions_by_threshold(self, predictions: List[Dict[str, Any]]) -> List[str]:
-        russian_emotions = []
-
-        for pred in predictions:
-            label = pred['label']
-            score = pred['score']
-
-            # Проверяем, превышает ли score порог для данной эмоции
-            if label in self._best_thresholds and score >= self._best_thresholds[label]:
-                # Переводим на русский и добавляем в список
-                russian_label = self._emotions_ru.get(label, label)
-                russian_emotions.append(russian_label)
-
-        # Убираем дубликаты (на всякий случай)
-        return list(dict.fromkeys(russian_emotions))
-
-    def _process_raw_predictions(self, raw_predictions: List[Any]) -> List[Dict[str, Any]]:
+    def _process_raw_predictions(self, raw_predictions: List[Any]) -> List[str]:
         if not raw_predictions:
             return []
 
-        # Обрабатываем разные форматы вывода модели
-        if isinstance(raw_predictions[0], list):
-            return raw_predictions[0]
-        return raw_predictions
+        processed_predictions = []
 
-    def predict(self, input_text: str) -> Any:
-        self._validate_input_text(input_text)
+        for raw_prediction in raw_predictions[0]:
+            label = raw_prediction['label']
+            score = raw_prediction['score']
+
+            if label in self._best_thresholds and score >= self._best_thresholds[label]:
+                ru_label = self._ru_labels[label]
+                processed_predictions.append(ru_label)
+
+        return processed_predictions
+
+    def predict(self, input_text: str) -> List[str]:
+        self._validate_input_text(input_text=input_text)
 
         raw_predictions = self._model(input_text)
 
-        processed_predictions = self._process_raw_predictions(raw_predictions)
-
-        return self._filter_predictions_by_threshold(processed_predictions)
+        return self._process_raw_predictions(raw_predictions)

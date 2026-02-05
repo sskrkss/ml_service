@@ -6,7 +6,7 @@ import pika
 import requests
 from jose import jwt
 
-from ml_model_loader import MlModelLoader
+from ml_model import MlModel
 
 
 connection_params = pika.ConnectionParameters(
@@ -26,7 +26,7 @@ channel = connection.channel()
 queue_name = os.getenv("RMQ_QUEUE")
 channel.queue_declare(queue=queue_name)
 
-ml_model = MlModelLoader()
+ml_model = MlModel()
 
 
 def callback(ch, method, properties, body):

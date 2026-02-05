@@ -7,10 +7,3 @@ class RunMlTaskRequestDto(BaseModel):
         max_length=200,
         description="Text for emotion analysis"
     )
-
-    @field_validator('input_text')
-    def validate(cls, value: str) -> str:
-        if len(value) > 200:
-            raise ValueError("Text exceeds maximum length of 200 characters")
-
-        return value
