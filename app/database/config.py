@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     DEBUG: Optional[bool] = None
     API_VERSION: Optional[str] = None
     AUTH_SECRET_KEY: Optional[str] = None
+    S2S_SECRET_KEY: Optional[str] = None
     AUTH_COOKIE_NAME: Optional[str] = None
     RUN_TASK_PRICE: Optional[float] = None
 

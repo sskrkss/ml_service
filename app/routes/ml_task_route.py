@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 
 from auth.authenticator import auth_user
+from auth.s2s_authenticator import auth_ml_worker
 from database.database import get_session
 from dto.request.run_ml_task_request_dto import RunMlTaskRequestDto
 from dto.request.save_ml_task_prediction_request_dto import SaveMlTaskPredictionDto
@@ -35,12 +36,16 @@ async def run_ml_task(
 
 @ml_task_route.post(
     "/save-prediction",
+    openapi_extra={
+        "security": [{"BearerAuth": []}],
+    },
     response_model=MlTaskResponseDto,
-    summary="Save ml task prediction",
+    summary="Save ml task prediction (only for s2s integration)",
     status_code=status.HTTP_200_OK
 )
 async def save_ml_task_prediction(
     request_dto: SaveMlTaskPredictionDto,
+    s2s=Depends(auth_ml_worker),
     session=Depends(get_session)
 ) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)

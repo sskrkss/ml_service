@@ -2,3 +2,4 @@ pika
 transformers
 logging
 requests
+python-jose

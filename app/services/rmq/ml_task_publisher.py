@@ -22,7 +22,10 @@ connection_params = pika.ConnectionParameters(
 def send_task(task_id: UUID, input_text: str):
     message = {
         "task_id": str(task_id),
-        "input_text": input_text
+        "features": {
+            'input_text': input_text
+        },
+        "model": "emotion analysis"
     }
 
     message_bytes = json.dumps(message).encode('utf-8')
