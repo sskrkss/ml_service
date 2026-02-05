@@ -56,7 +56,7 @@ async def sign_in(
         plain_password=request_dto.plain_password
     )
 
-    access_token = create_access_token(user.id)
+    access_token = create_access_token(user.id_string)
 
     set_auth_cookie(
         response=response,
