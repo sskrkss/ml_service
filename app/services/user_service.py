@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import HTTPException, status
 from sqlmodel import Session, Sequence
 
@@ -13,7 +15,7 @@ class UserService:
     def get_users(self) -> Sequence[User]:
         return self.user_repository.get_all()
 
-    def get_user_by_id(self, id: str) -> User:
+    def get_user_by_id(self, id: UUID) -> User:
         user = self.user_repository.get_by_id(id)
 
         if user is None:

@@ -1,4 +1,5 @@
 from typing import Sequence
+from uuid import UUID
 
 from sqlmodel import select, desc
 
@@ -7,7 +8,7 @@ from repositories.base_repository import BaseRepository
 
 
 class MlTaskRepository(BaseRepository[MlTask]):
-    def get_by_id(self, id: str) -> MlTask | None:
+    def get_by_id(self, id: UUID) -> MlTask | None:
         statement = select(MlTask).where(MlTask.id == id)
 
         return self._session.exec(statement).first()

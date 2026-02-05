@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from sqlmodel import Session, Sequence
 
@@ -31,13 +32,13 @@ class MlTaskService:
         user.add_ml_task(ml_task)
         self.user_repository.save(user)
 
-        send_task(ml_task.id_string, ml_task.input_text)
+        send_task(ml_task.id, ml_task.input_text)
 
         return ml_task
 
     def save_ml_task_prediction(
         self,
-        task_id: str,
+        task_id: UUID,
         task_status: TaskStatus,
         prediction: list[dict],
         worker_id: str

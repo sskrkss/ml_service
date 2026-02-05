@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlmodel import select, Sequence
 
 from models.user import User
@@ -5,7 +7,7 @@ from repositories.base_repository import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):
-    def get_by_id(self, id: str) -> User | None:
+    def get_by_id(self, id: UUID) -> User | None:
         statement = select(User).where(User.id == id)
 
         return self._session.exec(statement).first()

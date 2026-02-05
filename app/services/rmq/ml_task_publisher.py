@@ -1,5 +1,7 @@
-import pika
 import json
+from uuid import UUID
+
+import pika
 
 from database.config import get_settings
 
@@ -17,9 +19,9 @@ connection_params = pika.ConnectionParameters(
 )
 
 
-def send_task(task_id: str, input_text: str):
+def send_task(task_id: UUID, input_text: str):
     message = {
-        "task_id": task_id,
+        "task_id": str(task_id),
         "input_text": input_text
     }
 

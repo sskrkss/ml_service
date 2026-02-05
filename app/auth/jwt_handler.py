@@ -1,4 +1,5 @@
 import time
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from jose import jwt
@@ -10,9 +11,9 @@ settings = get_settings()
 AUTH_SECRET_KEY = settings.AUTH_SECRET_KEY
 
 
-def create_access_token(user_id: str) -> str:
+def create_access_token(user_id: UUID) -> str:
     payload = {
-        "user_id": user_id,
+        "user_id": str(user_id),
         "expires": time.time() + 3600
     }
     token = jwt.encode(payload, AUTH_SECRET_KEY, algorithm="HS256")
