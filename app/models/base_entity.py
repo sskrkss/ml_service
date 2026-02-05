@@ -19,7 +19,3 @@ class BaseEntity(SQLModel):
         nullable=True,
         sa_column_kwargs={"onupdate": datetime.now}
     )
-
-    @property
-    def id_string(self) -> str:
-        return str(self.id)
