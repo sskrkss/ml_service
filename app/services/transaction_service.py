@@ -24,8 +24,6 @@ class TransactionService:
         if transaction_type == transaction_type.DEPOSIT:
             user.balance.deposit(amount)
         elif transaction_type == transaction_type.WITHDRAW:
-            self.check_balance_before_withdraw(user, amount)
-
             user.balance.withdraw(amount)
 
         self.user_repository.save(user)
