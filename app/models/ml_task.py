@@ -23,6 +23,10 @@ class MlTask(BaseEntity, table=True):
         default=None,
         sa_column=Column("prediction", JSON, nullable=True)
     )
+    worker_id: Optional[str] = Field(
+        default=None,
+        nullable=True
+    )
     task_status: TaskStatus = Field(
         default=TaskStatus.PROCESSING,
         nullable=False

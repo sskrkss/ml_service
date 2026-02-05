@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import socket
 
 import pika
 import requests
@@ -148,15 +149,21 @@ def process_prediction(raw_predictions: list) -> list:
 def callback(ch, method, properties, body):
     message_str = body.decode("utf-8")
     message = json.loads(message_str)
-    raw_prediction = ml_model.predict(message['input_text'])
-    processed_prediction = process_prediction(raw_prediction)
+
+    try:
+        raw_prediction = ml_model.predict(message['input_text'])
+        processed_prediction = process_prediction(raw_prediction)
+    except Exception as e:
+        processed_prediction = None
 
     try:
         response = requests.post(
             f"{os.getenv('APP_URL')}/api/ml-tasks/save-prediction",
             json={
                 "task_id": message["task_id"],
-                "prediction": processed_prediction
+                "task_status": "completed" if processed_prediction else "failed",
+                "prediction": processed_prediction,
+                "worker_id": socket.gethostname()
             },
             timeout=30
         )

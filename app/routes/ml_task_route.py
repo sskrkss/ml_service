@@ -46,7 +46,9 @@ async def save_ml_task_prediction(
     ml_task_service = MlTaskService(session)
     ml_task = ml_task_service.save_ml_task_prediction(
         task_id=request_dto.task_id,
-        prediction=request_dto.prediction
+        task_status=request_dto.task_status,
+        prediction=request_dto.prediction,
+        worker_id=request_dto.worker_id
     )
 
     return MlTaskResponseDto.model_validate(ml_task)
