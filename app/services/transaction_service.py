@@ -24,17 +24,20 @@ class TransactionService:
         if transaction_type == transaction_type.DEPOSIT:
             user.balance.deposit(amount)
         elif transaction_type == transaction_type.WITHDRAW:
-            if amount > user.balance.amount:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Transaction declined: insufficient account balance"
-                )
+            self.check_balance_before_withdraw(user, amount)
 
             user.balance.withdraw(amount)
 
         self.user_repository.save(user)
 
         return transaction
+
+    def check_balance_before_withdraw(self, user: User, amount: float) -> None:
+        if amount > user.balance.amount:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Transaction declined: insufficient account balance"
+            )
 
     def get_transactions_by_user(self, user: User) -> Sequence[UserTransaction]:
         return self.transaction_repository.get_by_user(user)

@@ -1,5 +1,4 @@
 from typing import List
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
@@ -30,7 +29,7 @@ async def deposit(
     session=Depends(get_session)
 ) -> TransactionResponseDto:
     user_service = UserService(session)
-    target_user = user_service.get_user_by_id(str(request_dto.target_user_id))
+    target_user = user_service.get_user_by_id(request_dto.target_user_id)
 
     transaction_service = TransactionService(session)
     transaction = transaction_service.make_transaction(
@@ -52,12 +51,12 @@ async def deposit(
     status_code=status.HTTP_200_OK
 )
 async def get_transactions(
-    target_user_id: UUID,
+    target_user_id: str,
     admin: User = Depends(auth_admin),
     session=Depends(get_session)
 ) -> List[TransactionResponseDto]:
     user_service = UserService(session)
-    target_user = user_service.get_user_by_id(str(target_user_id))
+    target_user = user_service.get_user_by_id(target_user_id)
 
     transaction_service = TransactionService(session)
 

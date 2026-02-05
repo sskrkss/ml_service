@@ -7,6 +7,11 @@ from repositories.base_repository import BaseRepository
 
 
 class MlTaskRepository(BaseRepository[MlTask]):
+    def get_by_id(self, id: str) -> MlTask | None:
+        statement = select(MlTask).where(MlTask.id == id)
+
+        return self._session.exec(statement).first()
+
     def get_by_user(self, user: User) -> Sequence[MlTask]:
         statement = (
             select(MlTask)

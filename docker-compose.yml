@@ -19,6 +19,21 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+  ml_worker:
+    build: ./ml_worker/
+    deploy:
+      mode: replicated
+      replicas: 2
+    image: ml-service-work:latest
+    restart: unless-stopped
+    env_file:
+      - ./ml_worker/.env
+    volumes:
+      - ./ml_worker:/app
+    depends_on:
+      - rabbitmq
+    networks:
+      - ml-service-network
   web-proxy:
     image: nginx:latest
     container_name: ml-service-nginx
@@ -40,6 +55,10 @@ services:
     restart: unless-stopped
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit disk_free_limit 2147483648
     ports:
       - "5672:5672"
       - "15672:15672"
