@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
@@ -24,9 +25,9 @@ ml_task_route = APIRouter()
     status_code=status.HTTP_200_OK
 )
 async def run_ml_task(
-    request_dto: RunMlTaskRequestDto,
-    user: User = Depends(auth_user),
-    session=Depends(get_session)
+        request_dto: RunMlTaskRequestDto,
+        user: User = Depends(auth_user),
+        session=Depends(get_session)
 ) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)
     ml_task = ml_task_service.run_ml_task(user, request_dto.input_text)
@@ -44,9 +45,9 @@ async def run_ml_task(
     status_code=status.HTTP_200_OK
 )
 async def save_ml_task_prediction(
-    request_dto: SaveMlTaskPredictionDto,
-    s2s=Depends(auth_ml_worker),
-    session=Depends(get_session)
+        request_dto: SaveMlTaskPredictionDto,
+        s2s=Depends(auth_ml_worker),
+        session=Depends(get_session)
 ) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)
     ml_task = ml_task_service.save_ml_task_prediction(
@@ -69,8 +70,8 @@ async def save_ml_task_prediction(
     status_code=status.HTTP_200_OK
 )
 async def get_ml_tasks(
-    user: User = Depends(auth_user),
-    session=Depends(get_session)
+        user: User = Depends(auth_user),
+        session=Depends(get_session)
 ) -> List[MlTaskResponseDto]:
     ml_task_service = MlTaskService(session)
 
@@ -78,3 +79,26 @@ async def get_ml_tasks(
         MlTaskResponseDto.model_validate(ml_task)
         for ml_task in ml_task_service.get_ml_tasks_by_user(user)
     ]
+
+
+@ml_task_route.get(
+    "/{task_id}",
+    openapi_extra={
+        "security": [{"BearerAuth": []}],
+    },
+    response_model=MlTaskResponseDto,
+    summary="Get ml task by id",
+    status_code=status.HTTP_200_OK
+)
+async def get_ml_task(
+    task_id: UUID,
+    user: User = Depends(auth_user),
+    session=Depends(get_session)
+) -> MlTaskResponseDto:
+    ml_task_service = MlTaskService(session)
+    ml_task = ml_task_service.get_ml_tasks_by_id_and_user(
+        task_id=task_id,
+        user=user
+    )
+
+    return MlTaskResponseDto.model_validate(ml_task)

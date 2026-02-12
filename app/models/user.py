@@ -80,3 +80,6 @@ class User(BaseEntity, table=True):
     def add_ml_task(self, ml_task: "MlTask") -> None:
         ml_task.user_id = self.id
         self.ml_tasks.append(ml_task)
+
+    def has_ml_task(self, ml_task: "MlTask") -> bool:
+        return ml_task in self.ml_tasks

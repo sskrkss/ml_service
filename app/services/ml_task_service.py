@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlmodel import Session, Sequence
 
 from database.config import get_settings
@@ -66,3 +67,20 @@ class MlTaskService:
 
     def get_ml_tasks_by_user(self, user: User) -> Sequence[MlTask]:
         return self.ml_task_repository.get_by_user(user)
+
+    def get_ml_tasks_by_id_and_user(self, task_id: UUID, user: User) -> MlTask:
+        ml_task = self.ml_task_repository.get_by_id(task_id)
+
+        if ml_task is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Ml task not found"
+            )
+
+        if not user.has_ml_task(ml_task):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Ml task is not permitted"
+            )
+
+        return ml_task

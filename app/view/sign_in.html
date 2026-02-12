@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in · feel.ai{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/auth.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-sm auth-page">
+    <div class="card">
+        <!-- Логотип -->
+        <div class="logo">
+            <span class="logo-icon">🧠</span>
+            <span class="logo-text">feel</span>
+            <span class="logo-dot">.ai</span>
+        </div>
+
+        <div id="result" class="result-message"></div>
+
+        <form id="signInForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="email_or_username" class="form-label">
+                    Email or username
+                </label>
+                <input type="text"
+                       id="email_or_username"
+                       name="email_or_username"
+                       placeholder="your@email.com or username"
+                       class="form-input"
+                       autocomplete="username"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="plain_password" class="form-label">
+                    Password
+                </label>
+                <input type="password"
+                       id="plain_password"
+                       name="plain_password"
+                       placeholder="••••••••"
+                       class="form-input"
+                       autocomplete="current-password"
+                       required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+                Sign in
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <span class="text-muted">No account?</span>
+            <a href="/sign-up" class="auth-link">
+                Create one
+            </a>
+        </div>
+    </div>
+</div>
+<script src="/static/js/sign_in.js"></script>
+{% endblock %}

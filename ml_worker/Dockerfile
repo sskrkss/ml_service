@@ -15,7 +15,7 @@ from transformers import pipeline
 
 pipeline(
 'text-classification',
-model='fyaronskiy/ruRoberta-large-ru-go-emotions',
+model='SamLowe/roberta-base-go_emotions',
 top_k=None
 )
 EOF

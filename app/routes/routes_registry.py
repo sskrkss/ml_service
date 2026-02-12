@@ -7,6 +7,7 @@ from routes.health_check_route import health_check_route
 from routes.ml_task_route import ml_task_route
 from routes.transaction_route import transaction_route
 from routes.user_route import user_route
+from routes.web_route import web_route
 
 
 def get_app_router() -> APIRouter:
@@ -19,5 +20,6 @@ def get_app_router() -> APIRouter:
     router.include_router(transaction_route, prefix='/api/transactions', tags=['Transaction'])
     router.include_router(admin_transaction_route, prefix='/api/admin/transactions', tags=['Admin'])
     router.include_router(ml_task_route, prefix='/api/ml-tasks', tags=['Ml task'])
+    router.include_router(web_route, tags=['Web'])
 
     return router

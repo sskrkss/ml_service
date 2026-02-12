@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Sign up · feel.ai{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/auth.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-sm auth-page">
+    <div class="card">
+        <!-- Логотип -->
+        <div class="logo">
+            <span class="logo-icon">🧠</span>
+            <span class="logo-text">feel</span>
+            <span class="logo-dot">.ai</span>
+        </div>
+
+        <div id="result" class="result-message"></div>
+
+        <form id="signUpForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="email" class="form-label">
+                    Email
+                </label>
+                <input type="email"
+                       id="email"
+                       name="email"
+                       placeholder="your@email.com"
+                       class="form-input"
+                       autocomplete="email"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    Username
+                </label>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       placeholder="cooluser123"
+                       class="form-input"
+                       autocomplete="username"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="plain_password" class="form-label">
+                    Password
+                </label>
+                <input type="password"
+                       id="plain_password"
+                       name="plain_password"
+                       placeholder="••••••••"
+                       class="form-input"
+                       autocomplete="new-password"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password" class="form-label">
+                    Confirm password
+                </label>
+                <input type="password"
+                       id="confirm_password"
+                       name="confirm_password"
+                       placeholder="••••••••"
+                       class="form-input"
+                       autocomplete="new-password"
+                       required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+                Create account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <span class="text-muted">Already have an account?</span>
+            <a href="/sign-in" class="auth-link">
+                Sign in
+            </a>
+        </div>
+    </div>
+</div>
+<script src="/static/js/sign_up.js"></script>
+{% endblock %}
