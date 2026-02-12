@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 
 from auth.authenticator import auth_admin
 from database.database import get_session
-from dto.request.admin_request_dto import AdminRequestDto
+from dto.request.admin.admin_request_dto import AdminRequestDto
 from dto.response.user_response_dto import UserResponseDto
 from models import User
 from services.user_service import UserService
@@ -50,7 +50,7 @@ async def add_admin_role(
     session=Depends(get_session)
 ) -> UserResponseDto:
     user_service = UserService(session)
-    target_user = user_service.get_user_by_id(str(request_dto.target_user_id))
+    target_user = user_service.get_user_by_id(request_dto.target_user_id)
     target_user = user_service.add_admin_role(target_user)
 
     return UserResponseDto.model_validate(target_user)
@@ -72,7 +72,7 @@ async def remove_admin_role(
     session=Depends(get_session)
 ) -> UserResponseDto:
     user_service = UserService(session)
-    target_user = user_service.get_user_by_id(str(request_dto.target_user_id))
+    target_user = user_service.get_user_by_id(request_dto.target_user_id)
     target_user = user_service.remove_admin_role(target_user)
 
     return UserResponseDto.model_validate(target_user)

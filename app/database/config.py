@@ -17,8 +17,16 @@ class Settings(BaseSettings):
     DEBUG: Optional[bool] = None
     API_VERSION: Optional[str] = None
     AUTH_SECRET_KEY: Optional[str] = None
+    S2S_SECRET_KEY: Optional[str] = None
     AUTH_COOKIE_NAME: Optional[str] = None
     RUN_TASK_PRICE: Optional[float] = None
+
+    # RMQ settings
+    RMQ_HOST: Optional[str] = None
+    RMQ_PORT: Optional[int] = None
+    RMQ_USER: Optional[str] = None
+    RMQ_PASS: Optional[str] = None
+    RMQ_QUEUE: Optional[str] = None
 
     @property
     def DATABASE_URL_asyncpg(self):

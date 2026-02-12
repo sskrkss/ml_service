@@ -30,7 +30,7 @@ async def deposit(
     session=Depends(get_session)
 ) -> TransactionResponseDto:
     user_service = UserService(session)
-    target_user = user_service.get_user_by_id(str(request_dto.target_user_id))
+    target_user = user_service.get_user_by_id(request_dto.target_user_id)
 
     transaction_service = TransactionService(session)
     transaction = transaction_service.make_transaction(
@@ -57,7 +57,7 @@ async def get_transactions(
     session=Depends(get_session)
 ) -> List[TransactionResponseDto]:
     user_service = UserService(session)
-    target_user = user_service.get_user_by_id(str(target_user_id))
+    target_user = user_service.get_user_by_id(target_user_id)
 
     transaction_service = TransactionService(session)
 
