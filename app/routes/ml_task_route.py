@@ -25,9 +25,9 @@ ml_task_route = APIRouter()
     status_code=status.HTTP_200_OK
 )
 async def run_ml_task(
-        request_dto: RunMlTaskRequestDto,
-        user: User = Depends(auth_user),
-        session=Depends(get_session)
+    request_dto: RunMlTaskRequestDto,
+    user: User = Depends(auth_user),
+    session=Depends(get_session)
 ) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)
     ml_task = ml_task_service.run_ml_task(user, request_dto.input_text)
@@ -45,9 +45,9 @@ async def run_ml_task(
     status_code=status.HTTP_200_OK
 )
 async def save_ml_task_prediction(
-        request_dto: SaveMlTaskPredictionDto,
-        s2s=Depends(auth_ml_worker),
-        session=Depends(get_session)
+    request_dto: SaveMlTaskPredictionDto,
+    s2s=Depends(auth_ml_worker),
+    session=Depends(get_session)
 ) -> MlTaskResponseDto:
     ml_task_service = MlTaskService(session)
     ml_task = ml_task_service.save_ml_task_prediction(
@@ -70,8 +70,8 @@ async def save_ml_task_prediction(
     status_code=status.HTTP_200_OK
 )
 async def get_ml_tasks(
-        user: User = Depends(auth_user),
-        session=Depends(get_session)
+    user: User = Depends(auth_user),
+    session=Depends(get_session)
 ) -> List[MlTaskResponseDto]:
     ml_task_service = MlTaskService(session)
 
