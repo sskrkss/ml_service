@@ -9,65 +9,34 @@ class MlModel:
     _model = None
 
     _best_thresholds = {
-        'admiration': 0.36734693877551017,
-        'amusement': 0.2857142857142857,
-        'anger': 0.2857142857142857,
-        'annoyance': 0.16326530612244897,
-        'approval': 0.14285714285714285,
-        'caring': 0.14285714285714285,
-        'confusion': 0.18367346938775508,
-        'curiosity': 0.3469387755102041,
-        'desire': 0.32653061224489793,
-        'disappointment': 0.22448979591836732,
-        'disapproval': 0.2040816326530612,
-        'disgust': 0.2857142857142857,
-        'embarrassment': 0.18367346938775508,
-        'excitement': 0.2857142857142857,
-        'fear': 0.24489795918367346,
-        'gratitude': 0.7142857142857142,
-        'grief': 0.02040816326530612,
-        'joy': 0.3061224489795918,
-        'love': 0.44897959183673464,
-        'nervousness': 0.061224489795918366,
-        'optimism': 0.18367346938775508,
-        'pride': 0.04081632653061224,
-        'realization': 0.08163265306122448,
-        'relief': 0.1020408163265306,
-        'remorse': 0.22448979591836732,
-        'sadness': 0.3877551020408163,
-        'surprise': 0.3469387755102041,
-        'neutral': 0.24489795918367346
-    }
-
-    _ru_labels = {
-        "admiration": "восхищение",
-        "amusement": "веселье",
-        "anger": "злость",
-        "annoyance": "раздражение",
-        "approval": "одобрение",
-        "caring": "забота",
-        "confusion": "непонимание",
-        "curiosity": "любопытство",
-        "desire": "желание",
-        "disappointment": "разочарование",
-        "disapproval": "неодобрение",
-        "disgust": "отвращение",
-        "embarrassment": "смущение",
-        "excitement": "возбуждение",
-        "fear": "страх",
-        "gratitude": "признательность",
-        "grief": "горе",
-        "joy": "радость",
-        "love": "любовь",
-        "nervousness": "нервозность",
-        "optimism": "оптимизм",
-        "pride": "гордость",
-        "realization": "осознание",
-        "relief": "облегчение",
-        "remorse": "раскаяние",
-        "sadness": "грусть",
-        "surprise": "удивление",
-        "neutral": "нейтральность"
+        'admiration': 0.25,
+        'amusement': 0.45,
+        'anger': 0.15,
+        'annoyance': 0.10,
+        'approval': 0.30,
+        'caring': 0.40,
+        'confusion': 0.55,
+        'curiosity': 0.25,
+        'desire': 0.25,
+        'disappointment': 0.40,
+        'disapproval': 0.30,
+        'disgust': 0.20,
+        'embarrassment': 0.10,
+        'excitement': 0.35,
+        'fear': 0.40,
+        'gratitude': 0.45,
+        'grief': 0.05,
+        'joy': 0.40,
+        'love': 0.25,
+        'nervousness': 0.25,
+        'optimism': 0.20,
+        'pride': 0.10,
+        'realization': 0.15,
+        'relief': 0.05,
+        'remorse': 0.10,
+        'sadness': 0.40,
+        'surprise': 0.15,
+        'neutral': 0.25
     }
 
     def __new__(cls):
@@ -82,7 +51,7 @@ class MlModel:
     def _load_model(self) -> Pipeline:
         return pipeline(
             "text-classification",
-            model="fyaronskiy/ruRoberta-large-ru-go-emotions",
+            model="SamLowe/roberta-base-go_emotions",
             top_k=None
         )
 
@@ -101,8 +70,7 @@ class MlModel:
             score = raw_prediction['score']
 
             if label in self._best_thresholds and score >= self._best_thresholds[label]:
-                ru_label = self._ru_labels[label]
-                processed_predictions.append(ru_label)
+                processed_predictions.append(label)
 
         return processed_predictions
 

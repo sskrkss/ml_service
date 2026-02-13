@@ -13,3 +13,4 @@ passlib
 python-jose
 email-validator
 pika
+Jinja2
