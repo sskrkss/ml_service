@@ -9,3 +9,7 @@ nginx/ssl/
 *.pem
 *.crt
 *.csr
+
+__pycache__/
+
+testing.db
