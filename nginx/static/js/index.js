@@ -85,24 +85,39 @@ const getEmotionBadges = (emotions) => {
     return emotions.map(e => `<span class="badge emotion">${e}</span>`).join('');
 };
 
+const escapeHtmlAttr = (s) => {
+    const map = { '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' };
+    return String(s).replace(/[&"<>]/g, (ch) => map[ch]);
+};
+
 // ========== API CALLS ==========
+const fetchOpts = { credentials: 'include' };
 const api = {
-    getCurrentUser: () => fetch('/api/users/current'),
+    getCurrentUser: () => fetch('/api/users/current', fetchOpts),
     runMLTask: (inputText) => fetch('/api/ml-tasks/run', {
+        ...fetchOpts,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input_text: inputText })
     }),
-    getTaskStatus: (taskId) => fetch(`/api/ml-tasks/${taskId}`),
+    getTaskStatus: (taskId) => fetch(`/api/ml-tasks/${taskId}`, fetchOpts),
     deposit: (amount) => fetch('/api/transactions/deposit', {
+        ...fetchOpts,
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount })
     }),
-    logout: () => fetch('/api/sign-out', { method: 'POST' }),
-    getAllTransactions: () => fetch('/api/transactions'),
-    getAllPredictions: () => fetch('/api/ml-tasks')
+    logout: () => fetch('/api/sign-out', { method: 'POST', ...fetchOpts }),
+    getAllTransactions: () => fetch('/api/transactions', fetchOpts),
+    getAllPredictions: () => fetch('/api/ml-tasks', fetchOpts)
 };
+
+async function fetchSortedList(fetchFn, dateKey = 'created_at') {
+    const response = await fetchFn();
+    const data = response.ok ? await response.json() : null;
+    if (data) data.sort((a, b) => new Date(b[dateKey]) - new Date(a[dateKey]));
+    return { data, response };
+}
 
 // ========== TEMPLATES ==========
 const templates = {
@@ -113,10 +128,21 @@ const templates = {
         </div>
     `,
 
-    error: (message, retryFn = 'loadUserProfile') => `
-        <div class="loading-state">
-            <p style="color: #c62828; margin-bottom: 16px;">❌ ${message}</p>
-            <button onclick="${retryFn}()" class="btn btn-primary">Try again</button>
+    sectionLoading: (message) => `<div class="spinner-sm"></div><span>${message}</span>`,
+
+    error: (message) => templates.sectionError(message, 'retryProfileBtn'),
+
+    sectionError: (message, retryButtonId) => `
+        <div class="error-state">
+            <p class="text-error">❌ ${message}</p>
+            <button type="button" id="${retryButtonId}" class="btn btn-primary btn-sm">Try again</button>
+        </div>
+    `,
+
+    emptyState: (icon, message) => `
+        <div class="empty-state">
+            <div class="empty-icon">${icon}</div>
+            <p>${message}</p>
         </div>
     `,
 
@@ -129,7 +155,7 @@ const templates = {
     `,
 
     mlCard: (isAuthenticated) => {
-        const exampleButtons = templates.exampleButtons(); // ВЫНОСИМ В ОТДЕЛЬНУЮ ПЕРЕМЕННУЮ
+        const exampleButtons = templates.exampleButtons();
 
         return `
             <div class="card-gradient">
@@ -173,7 +199,7 @@ const templates = {
             { text: 'Just another ordinary day. Nothing special.', label: '😐 Neutral' }
         ];
         return examples.map(ex =>
-            `<button onclick="setExampleText('${ex.text}')" class="example-btn">${ex.label}</button>`
+            `<button type="button" class="example-btn" data-example="${escapeHtmlAttr(ex.text)}">${ex.label}</button>`
         ).join('');
     },
 
@@ -228,7 +254,7 @@ const templates = {
     // ========== TABLES ==========
     transactionsTable: () => {
         if (!allTransactions.length) {
-            return `<div class="empty-state"><div class="empty-icon">📭</div><p>${CONFIG.MESSAGES.NO_TRANSACTIONS}</p></div>`;
+            return templates.emptyState('📭', CONFIG.MESSAGES.NO_TRANSACTIONS);
         }
 
         const start = (transactionsCurrentPage - 1) * CONFIG.TRANSACTIONS.PAGE_SIZE;
@@ -273,7 +299,7 @@ const templates = {
 
     predictionsTable: () => {
         if (!allPredictions.length) {
-            return `<div class="empty-state"><div class="empty-icon">🤖</div><p>${CONFIG.MESSAGES.NO_PREDICTIONS}</p></div>`;
+            return templates.emptyState('🤖', CONFIG.MESSAGES.NO_PREDICTIONS);
         }
 
         const start = (predictionsCurrentPage - 1) * CONFIG.PREDICTIONS.PAGE_SIZE;
@@ -325,32 +351,16 @@ const templates = {
     `,
 
     transactionsLoading: () => `
-        <div class="transactions-loading">
-            <div class="spinner-sm"></div>
-            <span>${CONFIG.MESSAGES.LOADING_TRANSACTIONS}</span>
-        </div>
+        <div class="transactions-loading">${templates.sectionLoading(CONFIG.MESSAGES.LOADING_TRANSACTIONS)}</div>
     `,
 
     predictionsLoading: () => `
-        <div class="predictions-loading">
-            <div class="spinner-sm"></div>
-            <span>${CONFIG.MESSAGES.LOADING_PREDICTIONS}</span>
-        </div>
+        <div class="predictions-loading">${templates.sectionLoading(CONFIG.MESSAGES.LOADING_PREDICTIONS)}</div>
     `,
 
-    transactionsError: () => `
-        <div class="error-state">
-            <p style="color: #c62828;">Failed to load transactions</p>
-            <button onclick="loadTransactions()" class="btn btn-primary btn-sm">Try again</button>
-        </div>
-    `,
+    transactionsError: () => templates.sectionError('Failed to load transactions', 'retryTransactionsBtn'),
 
-    predictionsError: () => `
-        <div class="error-state">
-            <p style="color: #c62828;">Failed to load prediction history</p>
-            <button onclick="loadPredictions()" class="btn btn-primary btn-sm">Try again</button>
-        </div>
-    `
+    predictionsError: () => templates.sectionError('Failed to load prediction history', 'retryPredictionsBtn')
 };
 
 // ========== RENDERERS ==========
@@ -393,84 +403,88 @@ async function loadUserProfile() {
     } catch (error) {
         console.error('Error:', error);
         content.innerHTML = templates.error('Something went wrong');
+        const retryBtn = content.querySelector('#retryProfileBtn');
+        if (retryBtn) retryBtn.addEventListener('click', loadUserProfile);
     }
 }
 
-// ========== TRANSACTIONS ==========
-async function toggleTransactions() {
-    const btn = document.getElementById('toggleTransactionsBtn');
-    const container = document.getElementById('transactionsContainer');
-    if (!container) return;
-
-    transactionsVisible = !transactionsVisible;
-    btn.innerText = transactionsVisible ? 'Hide History' : 'History';
-    container.style.display = transactionsVisible ? 'block' : 'none';
-
-    if (transactionsVisible) {
-        container.innerHTML = templates.transactionsLoading();
-        await loadTransactions();
-    } else {
-        container.innerHTML = '';
-    }
+// ========== TOGGLE SECTION HELPER ==========
+function createToggle(getVisible, setVisible, btnId, containerId, loadingTemplate, loadFn) {
+    return async function () {
+        const btn = document.getElementById(btnId);
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        setVisible(!getVisible());
+        btn.innerText = getVisible() ? 'Hide History' : 'History';
+        container.style.display = getVisible() ? 'block' : 'none';
+        if (getVisible()) {
+            container.innerHTML = loadingTemplate();
+            await loadFn();
+        } else {
+            container.innerHTML = '';
+        }
+    };
 }
+
+const toggleTransactions = createToggle(
+    () => transactionsVisible,
+    (v) => { transactionsVisible = v; },
+    'toggleTransactionsBtn',
+    'transactionsContainer',
+    templates.transactionsLoading,
+    loadTransactions
+);
+
+const togglePredictions = createToggle(
+    () => predictionsVisible,
+    (v) => { predictionsVisible = v; },
+    'togglePredictionsBtn',
+    'predictionsContainer',
+    templates.predictionsLoading,
+    loadPredictions
+);
 
 async function loadTransactions() {
     try {
-        const response = await api.getAllTransactions();
-        if (response.ok) {
-            allTransactions = await response.json();
-            allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            transactionsTotalPages = Math.ceil(allTransactions.length / CONFIG.TRANSACTIONS.PAGE_SIZE);
-            transactionsCurrentPage = 1;
-
-            const container = document.getElementById('transactionsContainer');
-            if (container) container.innerHTML = templates.transactionsTable();
-        } else if (response.status === 401) {
-            window.location.href = '/sign-in';
+        const { data, response } = await fetchSortedList(api.getAllTransactions);
+        if (!response.ok) {
+            if (response.status === 401) window.location.href = '/sign-in';
+            return;
         }
+        allTransactions = data;
+        transactionsTotalPages = Math.ceil(allTransactions.length / CONFIG.TRANSACTIONS.PAGE_SIZE);
+        transactionsCurrentPage = 1;
+        const container = document.getElementById('transactionsContainer');
+        if (container) container.innerHTML = templates.transactionsTable();
     } catch (error) {
         console.error('Error loading transactions:', error);
         const container = document.getElementById('transactionsContainer');
-        if (container) container.innerHTML = templates.transactionsError();
-    }
-}
-
-// ========== PREDICTIONS ==========
-async function togglePredictions() {
-    const btn = document.getElementById('togglePredictionsBtn');
-    const container = document.getElementById('predictionsContainer');
-    if (!container) return;
-
-    predictionsVisible = !predictionsVisible;
-    btn.innerText = predictionsVisible ? 'Hide History' : 'History';
-    container.style.display = predictionsVisible ? 'block' : 'none';
-
-    if (predictionsVisible) {
-        container.innerHTML = templates.predictionsLoading();
-        await loadPredictions();
-    } else {
-        container.innerHTML = '';
+        if (container) {
+            container.innerHTML = templates.transactionsError();
+            container.querySelector('#retryTransactionsBtn')?.addEventListener('click', loadTransactions);
+        }
     }
 }
 
 async function loadPredictions() {
     try {
-        const response = await api.getAllPredictions();
-        if (response.ok) {
-            allPredictions = await response.json();
-            allPredictions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            predictionsTotalPages = Math.ceil(allPredictions.length / CONFIG.PREDICTIONS.PAGE_SIZE);
-            predictionsCurrentPage = 1;
-
-            const container = document.getElementById('predictionsContainer');
-            if (container) container.innerHTML = templates.predictionsTable();
-        } else if (response.status === 401) {
-            window.location.href = '/sign-in';
+        const { data, response } = await fetchSortedList(api.getAllPredictions);
+        if (!response.ok) {
+            if (response.status === 401) window.location.href = '/sign-in';
+            return;
         }
+        allPredictions = data;
+        predictionsTotalPages = Math.ceil(allPredictions.length / CONFIG.PREDICTIONS.PAGE_SIZE);
+        predictionsCurrentPage = 1;
+        const container = document.getElementById('predictionsContainer');
+        if (container) container.innerHTML = templates.predictionsTable();
     } catch (error) {
         console.error('Error loading predictions:', error);
         const container = document.getElementById('predictionsContainer');
-        if (container) container.innerHTML = templates.predictionsError();
+        if (container) {
+            container.innerHTML = templates.predictionsError();
+            container.querySelector('#retryPredictionsBtn')?.addEventListener('click', loadPredictions);
+        }
     }
 }
 
@@ -492,17 +506,15 @@ function changePage(type, page) {
 async function refreshTransactions() {
     if (!transactionsVisible) return;
     try {
-        const response = await api.getAllTransactions();
-        if (response.ok) {
-            allTransactions = await response.json();
-            allTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            transactionsTotalPages = Math.ceil(allTransactions.length / CONFIG.TRANSACTIONS.PAGE_SIZE);
-            if (transactionsCurrentPage > transactionsTotalPages) {
-                transactionsCurrentPage = transactionsTotalPages || 1;
-            }
-            const container = document.getElementById('transactionsContainer');
-            if (container) container.innerHTML = templates.transactionsTable();
+        const { data, response } = await fetchSortedList(api.getAllTransactions);
+        if (!response?.ok || !data) return;
+        allTransactions = data;
+        transactionsTotalPages = Math.ceil(allTransactions.length / CONFIG.TRANSACTIONS.PAGE_SIZE);
+        if (transactionsCurrentPage > transactionsTotalPages) {
+            transactionsCurrentPage = transactionsTotalPages || 1;
         }
+        const container = document.getElementById('transactionsContainer');
+        if (container) container.innerHTML = templates.transactionsTable();
     } catch (error) {
         console.error('Error refreshing transactions:', error);
     }
@@ -511,17 +523,15 @@ async function refreshTransactions() {
 async function refreshPredictions() {
     if (!predictionsVisible) return;
     try {
-        const response = await api.getAllPredictions();
-        if (response.ok) {
-            allPredictions = await response.json();
-            allPredictions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            predictionsTotalPages = Math.ceil(allPredictions.length / CONFIG.PREDICTIONS.PAGE_SIZE);
-            if (predictionsCurrentPage > predictionsTotalPages) {
-                predictionsCurrentPage = predictionsTotalPages || 1;
-            }
-            const container = document.getElementById('predictionsContainer');
-            if (container) container.innerHTML = templates.predictionsTable();
+        const { data, response } = await fetchSortedList(api.getAllPredictions);
+        if (!response?.ok || !data) return;
+        allPredictions = data;
+        predictionsTotalPages = Math.ceil(allPredictions.length / CONFIG.PREDICTIONS.PAGE_SIZE);
+        if (predictionsCurrentPage > predictionsTotalPages) {
+            predictionsCurrentPage = predictionsTotalPages || 1;
         }
+        const container = document.getElementById('predictionsContainer');
+        if (container) container.innerHTML = templates.predictionsTable();
     } catch (error) {
         console.error('Error refreshing predictions:', error);
     }
@@ -648,10 +658,10 @@ function showError(icon, title, message) {
     errorContainer.className = 'error-container';
     errorContainer.innerHTML = `
         <div class="flex items-center gap-3">
-            <span style="font-size: 24px; color: #ffb3b3;">${icon}</span>
+            <span class="ml-error-icon">${icon}</span>
             <div>
-                <div style="font-weight: bold; color: white; margin-bottom: 4px;">${title}</div>
-                <div style="color: rgba(255,255,255,0.9); font-size: 13px;">${message}</div>
+                <div class="ml-error-title">${title}</div>
+                <div class="ml-error-message">${message}</div>
             </div>
         </div>
     `;
@@ -735,8 +745,8 @@ function renderTaskResult(task) {
     if (task.prediction?.length > 0) {
         resultContainer.innerHTML = `
             <div class="flex items-center gap-2 mb-3">
-                <span style="font-size: 16px;">🎯</span>
-                <span style="font-size: 14px; opacity: 0.9;">Detected emotions</span>
+                <span class="ml-result-icon">🎯</span>
+                <span class="ml-result-title">Detected emotions</span>
             </div>
             <div class="emotions-list">
                 ${task.prediction.map(emotion => `<span class="emotion-tag">${emotion}</span>`).join('')}
@@ -745,8 +755,8 @@ function renderTaskResult(task) {
     } else {
         resultContainer.innerHTML = `
             <div class="flex items-center gap-2">
-                <span style="font-size: 16px;">😐</span>
-                <span style="font-size: 14px; opacity: 0.9;">No strong emotions detected</span>
+                <span class="ml-result-icon">😐</span>
+                <span class="ml-result-title">No strong emotions detected</span>
             </div>
         `;
     }
@@ -841,4 +851,12 @@ async function handleLogout() {
 }
 
 // ========== INIT ==========
-document.addEventListener('DOMContentLoaded', loadUserProfile);
+document.addEventListener('DOMContentLoaded', () => {
+    loadUserProfile();
+    document.body.addEventListener('click', (e) => {
+        const btn = e.target.closest('.example-btn');
+        if (btn && btn.dataset.example !== undefined) {
+            setExampleText(btn.dataset.example);
+        }
+    });
+});
